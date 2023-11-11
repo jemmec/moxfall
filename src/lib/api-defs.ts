@@ -1,3 +1,5 @@
+import { MoxfieldCard } from "./types";
+
 const SCRYFALL_API = "https://api.scryfall.com";
 const MOXFIELD_API = "https://api2.moxfield.com";
 
@@ -15,8 +17,18 @@ export type MainboardPayload = {
     userPrefPrinting: boolean;
 };
 
-const mainboard = async (payload: MainboardPayload, privateDeckId: string, accessToken: string) => {
-    let success = true;
+export type CardResponse = {
+    card: MoxfieldCard;
+    collection: any[];
+    tags: any[];
+    tokens: any[];
+};
+
+const mainboard = async (
+    payload: MainboardPayload,
+    privateDeckId: string,
+    accessToken: string
+): Promise<CardResponse> => {
     const res = await fetch(`${MOXFIELD_API}/v2/decks/${privateDeckId}/cards/mainboard`, {
         method: "POST",
         credentials: "include",
@@ -25,11 +37,8 @@ const mainboard = async (payload: MainboardPayload, privateDeckId: string, acces
             "Content-Type": "application/json",
             Authorization: `bearer ${accessToken}`
         }
-    }).catch((err) => {
-        console.error(err);
-        success = false;
-    });
-    return success;
+    }).then((res) => res.json() as unknown as CardResponse);
+    return res;
 };
 
 export type RefreshResponse = {
@@ -60,6 +69,8 @@ export type DeckResponse = {
     id: string;
     publicUrl: string;
     publicId: string;
+    version: number;
+    visibility: boolean;
 };
 
 const deck = async (publicDeckId: string, accessToken: string): Promise<DeckResponse> => {

@@ -5,16 +5,36 @@ type EchoMessage = {
 
 type InjectStateMessage = {
     type: "inject";
+    elementId: string;
     attribute: string;
     value: string;
 };
 
-type ForceDispatchReduxMessage = {
+type ReduxDispatchMessage = {
     type: "dispatch";
-    action: string;
+    action: ReduxAction;
+};
+
+type ReduxPrintStateMessage = {
+    type: "printstate";
+};
+
+export type RuntimeMessage =
+    | EchoMessage
+    | InjectStateMessage
+    | ReduxDispatchMessage
+    | ReduxPrintStateMessage;
+
+export type RuntimeMessageResponse = string;
+
+export type MoxfieldCard = any;
+
+export type ReduxAction = {
+    type: string;
     payload: any;
 };
 
-export type RuntimeMessage = EchoMessage | InjectStateMessage | ForceDispatchReduxMessage;
-
-export type RuntimeMessageResponse = string;
+export type ReduxStore = {
+    dispatch: (action: ReduxAction) => void;
+    getState: () => any;
+};

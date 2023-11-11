@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import React from "react";
 import API, { DeckResponse, RefreshResponse } from "../lib/api-defs";
-import { forceUpdateElement } from "../lib/utils";
+import { reduxDispatch, reduxPrintState } from ".";
 
 const Content = () => {
     const dropRef = React.useRef<HTMLDivElement>(null);
@@ -106,7 +106,7 @@ const Content = () => {
                 return;
             }
 
-            const success = await API.mainboard(
+            const res = await API.mainboard(
                 {
                     cardId,
                     quantity: 1,
@@ -116,21 +116,74 @@ const Content = () => {
                 auth.access_token
             ).catch((err) => console.error(err));
 
-            if (!success) {
+            if (!res || !res.card) {
                 console.error("Adding card to mainboard was not successfull");
                 return;
             }
 
-            //Force a refresh on the maincontent
-            // forceUpdateElement("moxfall-body");
-            const test = document.getElementById("maincontent") as any;
-            if (test) {
-                const thing = test._reactInternalFiber;
+            console.log("the card", res.card);
+            console.log("the deck", deck);
 
-                console.log(thing);
+            reduxDispatch({
+                type: "ADD_CARD_TO_BOARD_BEGIN",
+                payload: undefined
+            });
 
-                // thing.forceUpdate();
-            }
+            reduxDispatch({
+                type: "ADD_CARD_TO_BOARD_BEGIN",
+                payload: {
+                    deck: {
+                        publicId: deck.publicId
+                    },
+                    board: "mainboard",
+                    card: res.card,
+                    quantity: 1
+                }
+            });
+
+            // dispatch({
+            //     type: "ADD_CARD_TO_BOARD_END",
+            //     payload: {
+            //         origin: {
+            //             deck: { publicId: "exampleDeckId" },
+            //             board: "exampleBoardType",
+            //             card: { uniqueCardId: "exampleUniqueCardId" },
+            //             quantity: 1,
+            //             headers: {
+            //                 "x-deck-has-changed": "true",
+            //                 "x-deck-version": "your-version" // replace with the actual version
+            //             }
+            //         },
+            //         data: {
+            //             tags: ["tag1", "tag2"],
+            //             collection: "exampleCollection",
+            //             card: {
+            //                 // ... your card properties
+            //             },
+            //             tokens: ["token1", "token2"],
+            //             boardType: "mainboard"
+            //         }
+            //     }
+            // });
+
+            // dispatch({
+            //     type: "dispatch",
+            //     action: {
+            //         type: "UPDATE_DECK_END",
+            //         payload: {
+            //             data: {},
+            //             headers: {
+            //                 "x-deck-version": deck.version,
+            //                 "x-deck-has-changed": true
+            //             },
+            //             origin: {
+            //                 deck: {
+            //                     ...deck
+            //                 }
+            //             }
+            //         }
+            //     }
+            // });
         },
         [auth, deck]
     );
@@ -149,12 +202,26 @@ const Content = () => {
                 }
             )}
         >
-            <button
-                className={clsx("btn btn-outline btn-outline-primary", "pointer-events-auto h-min")}
-                onClick={() => test_addCard("DjJZN" /*Arcane Signet*/)}
-            >
-                <h3>Add Arcane Signet</h3>
-            </button>
+            <div className="felx gap-4">
+                <button
+                    className={clsx(
+                        "btn btn-outline btn-outline-primary",
+                        "pointer-events-auto h-min"
+                    )}
+                    onClick={() => test_addCard("DjJZN" /*Arcane Signet*/)}
+                >
+                    <h3>Add Arcane Signet</h3>
+                </button>
+                <button
+                    className={clsx(
+                        "btn btn-outline btn-outline-primary",
+                        "pointer-events-auto h-min"
+                    )}
+                    onClick={() => reduxPrintState()}
+                >
+                    <h3>Print Redux state</h3>
+                </button>
+            </div>
         </div>
     );
 };
