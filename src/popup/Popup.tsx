@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react'
-
-import './Popup.css'
+import { useState, useEffect } from "react";
 
 export const Popup = () => {
-  return (
-    <main>
-      <h3>Moxfall</h3>
-    </main>
-  )
-}
+    return (
+        <main>
+            <h3>Moxfall</h3>
+        </main>
+    );
+};
 
-export default Popup
+export default Popup;

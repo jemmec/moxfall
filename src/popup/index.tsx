@@ -1,10 +1,6 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { Popup } from './Popup'
-import './index.css'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Popup } from "./Popup";
+import "../globals.css";
 
-ReactDOM.createRoot(document.getElementById('app') as HTMLElement).render(
-  <React.StrictMode>
-    <Popup />
-  </React.StrictMode>,
-)
+ReactDOM.createRoot(document.getElementById("app") as HTMLElement).render(<Popup />);
