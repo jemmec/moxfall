@@ -23,7 +23,8 @@ export default defineManifest({
     },
     content_scripts: [
         {
-            matches: ["http://www.moxfield.com/*", "https://www.moxfield.com/*"],
+            run_at: "document_end",
+            matches: ["http://www.moxfield.com/decks/*", "https://www.moxfield.com/decks/*"],
             js: ["src/contentScript/index.tsx"]
         }
     ],
@@ -38,5 +39,5 @@ export default defineManifest({
             matches: []
         }
     ],
-    permissions: ["sidePanel", "storage"]
+    permissions: ["storage", "scripting", "activeTab"]
 });

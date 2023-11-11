@@ -6,6 +6,7 @@ import "../globals.css";
 
 const body = document.body as HTMLBodyElement;
 body.style.position = "relative";
+body.id = "moxfall-body";
 const app = document.createElement("div");
 app.id = "moxfall-drop-intercepter";
 body.append(app);

@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import React from "react";
 import API, { DeckResponse, RefreshResponse } from "../lib/api-defs";
+import { forceUpdateElement } from "../lib/utils";
 
 const Content = () => {
     const dropRef = React.useRef<HTMLDivElement>(null);
@@ -99,6 +100,41 @@ const Content = () => {
         };
     }, [dropRef.current]);
 
+    const test_addCard = React.useCallback(
+        async (cardId: string) => {
+            if (!auth || !deck) {
+                return;
+            }
+
+            const success = await API.mainboard(
+                {
+                    cardId,
+                    quantity: 1,
+                    userPrefPrinting: true
+                },
+                deck.id,
+                auth.access_token
+            ).catch((err) => console.error(err));
+
+            if (!success) {
+                console.error("Adding card to mainboard was not successfull");
+                return;
+            }
+
+            //Force a refresh on the maincontent
+            // forceUpdateElement("moxfall-body");
+            const test = document.getElementById("maincontent") as any;
+            if (test) {
+                const thing = test._reactInternalFiber;
+
+                console.log(thing);
+
+                // thing.forceUpdate();
+            }
+        },
+        [auth, deck]
+    );
+
     if (auth === null || deck === null) {
         return <></>;
     }
@@ -107,12 +143,19 @@ const Content = () => {
         <div
             ref={dropRef}
             className={clsx(
-                "group/drop absolute inset-0 flex justify-center items-center z-[9999] pointer-events-none",
+                "group/drop absolute inset-0 flex justify-center z-[9999] pointer-events-none",
                 {
                     "pointer-events-auto bg-cyan-400 bg-opacity-20": prepare
                 }
             )}
-        ></div>
+        >
+            <button
+                className={clsx("btn btn-outline btn-outline-primary", "pointer-events-auto h-min")}
+                onClick={() => test_addCard("DjJZN" /*Arcane Signet*/)}
+            >
+                <h3>Add Arcane Signet</h3>
+            </button>
+        </div>
     );
 };
 

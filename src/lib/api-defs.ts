@@ -11,8 +11,8 @@ const scryfallId = (cardName: string): string => {
 
 export type MainboardPayload = {
     cardId: string;
-    quantity: 1;
-    userPrefPrinting: true;
+    quantity: number;
+    userPrefPrinting: boolean;
 };
 
 const mainboard = async (payload: MainboardPayload, privateDeckId: string, accessToken: string) => {
@@ -74,8 +74,9 @@ const deck = async (publicDeckId: string, accessToken: string): Promise<DeckResp
 };
 
 export default {
+    refresh,
     deck,
+    mainboard,
     addCard,
-    scryfallId,
-    refresh
+    scryfallId
 };
