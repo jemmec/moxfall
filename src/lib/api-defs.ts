@@ -1,4 +1,4 @@
-import { MoxfieldCard } from "./types";
+import { CardInBoardMetadata, MoxfieldCard } from "./types";
 
 const SCRYFALL_API = "https://api.scryfall.com";
 const MOXFIELD_API = "https://api2.moxfield.com";
@@ -18,7 +18,7 @@ export type MainboardPayload = {
 };
 
 export type CardResponse = {
-    card: MoxfieldCard;
+    card: CardInBoardMetadata;
     collection: any[];
     tags: any[];
     tokens: any[];

@@ -2,13 +2,13 @@ import { ReduxAction, ReduxStore, RuntimeMessage, RuntimeMessageResponse } from 
 
 console.log("Background service started!");
 
-const injectionFn = (type: string, arg?: any): void => {
+const injectionFn = (type: string, arg?: any): boolean => {
     const ELEMENT_ID = "js-reactroot";
     const reactRoot = document.getElementById(ELEMENT_ID) as any; // Force any here
 
     if (!reactRoot) {
         console.error(`The react root for ${ELEMENT_ID} was null!`);
-        return;
+        return false;
     }
 
     let reactContainerKey: string | null = null;
@@ -21,7 +21,7 @@ const injectionFn = (type: string, arg?: any): void => {
 
     if (reactContainerKey === null) {
         console.error("Failed to find react container on moxfiledApp");
-        return;
+        return false;
     }
 
     const moxfieldApp = reactRoot[reactContainerKey];
@@ -31,7 +31,7 @@ const injectionFn = (type: string, arg?: any): void => {
 
         if (!store) {
             console.error("Redux store was undefined");
-            return;
+            return false;
         }
 
         switch (type) {
@@ -39,16 +39,18 @@ const injectionFn = (type: string, arg?: any): void => {
                 const a = JSON.parse(arg) as ReduxAction;
                 console.log("action", a);
                 store.dispatch(a);
-                break;
             }
             case "printstate": {
                 console.log("Redux Store", store.getState());
-                break;
             }
         }
     } catch (err) {
         console.log("Injection function failed: " + err);
     }
+
+    console.log("Successfully completed injection");
+
+    return true;
 };
 
 chrome.runtime.onMessage.addListener(
@@ -59,7 +61,10 @@ chrome.runtime.onMessage.addListener(
     ) => {
         switch (message.type) {
             case "echo":
-                sendResponse(message.message);
+                sendResponse({
+                    ok: true,
+                    message: message.message
+                });
                 break;
             case "inject":
                 break;
@@ -68,11 +73,14 @@ chrome.runtime.onMessage.addListener(
                     console.log("Attempting to call dispatch on redux state, wish me some luck!");
                     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
                         const activeTab = tabs[0];
-                        chrome.scripting.executeScript<[string, string], void>({
+                        chrome.scripting.executeScript<[string, string], boolean>({
                             world: "MAIN",
                             target: { tabId: activeTab.id ?? -1 },
                             args: [message.type, JSON.stringify(message.action)],
                             func: injectionFn
+                        });
+                        sendResponse({
+                            ok: true
                         });
                     });
                 }
@@ -80,11 +88,14 @@ chrome.runtime.onMessage.addListener(
             case "printstate": {
                 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
                     const activeTab = tabs[0];
-                    chrome.scripting.executeScript<[string], void>({
+                    chrome.scripting.executeScript<[string], boolean>({
                         world: "MAIN",
                         target: { tabId: activeTab.id ?? -1 },
                         args: [message.type],
                         func: injectionFn
+                    });
+                    sendResponse({
+                        ok: true
                     });
                 });
             }

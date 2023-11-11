@@ -5,10 +5,9 @@ import Content from "./Content";
 import "../globals.css";
 import { ReduxAction, RuntimeMessage, RuntimeMessageResponse } from "../lib/types";
 
-export const service_echo = (
-    message: string,
-    response: (response: RuntimeMessageResponse) => void
-) =>
+type ResponseFn = (response: RuntimeMessageResponse) => void;
+
+export const serviceEcho = (message: string, response: ResponseFn) =>
     chrome.runtime.sendMessage<RuntimeMessage, RuntimeMessageResponse>(
         {
             type: "echo",
@@ -17,16 +16,34 @@ export const service_echo = (
         response
     );
 
-export const reduxDispatch = (action: ReduxAction) =>
-    chrome.runtime.sendMessage<RuntimeMessage, RuntimeMessageResponse>({
-        type: "dispatch",
-        action
+export const reduxDispatch = (action: ReduxAction): Promise<boolean> => {
+    return new Promise<boolean>((resolve) => {
+        chrome.runtime.sendMessage<RuntimeMessage, RuntimeMessageResponse>(
+            {
+                type: "dispatch",
+                action
+            },
+            (res) => resolve(res.ok)
+        );
     });
+};
 
-export const reduxPrintState = () =>
-    chrome.runtime.sendMessage<RuntimeMessage, RuntimeMessageResponse>({
-        type: "printstate"
+export const reduxPrintState = (): Promise<string> => {
+    return new Promise<string>((resolve, reject) => {
+        chrome.runtime.sendMessage<RuntimeMessage, RuntimeMessageResponse>(
+            {
+                type: "printstate"
+            },
+            (res) => {
+                if (!res.message) {
+                    reject();
+                    return;
+                }
+                resolve(res.message);
+            }
+        );
     });
+};
 
 const body = document.body as HTMLBodyElement;
 body.style.position = "relative";

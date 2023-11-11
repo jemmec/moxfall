@@ -124,15 +124,20 @@ const Content = () => {
             console.log("the card", res.card);
             console.log("the deck", deck);
 
-            reduxDispatch({
+            const success = await reduxDispatch({
                 type: "ADD_CARD_TO_BOARD_BEGIN",
                 deck: {
                     publicId: deck.publicId
                 },
                 board: "mainboard",
-                card: res.card,
+                card: res.card.card,
                 quantity: 1
             });
+
+            if (!success) {
+                console.log("Failed to redux my dispatch");
+                return;
+            }
         },
         [auth, deck]
     );

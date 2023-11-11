@@ -1,33 +1,56 @@
-type EchoMessage = {
+type Echo = {
     type: "echo";
     message: string;
 };
 
-type InjectStateMessage = {
+type InjectState = {
     type: "inject";
     elementId: string;
     attribute: string;
     value: string;
 };
 
-type ReduxDispatchMessage = {
+type ReduxDispatch = {
     type: "dispatch";
     action: ReduxAction;
 };
 
-type ReduxPrintStateMessage = {
+type ReduxPrintState = {
     type: "printstate";
 };
 
-export type RuntimeMessage =
-    | EchoMessage
-    | InjectStateMessage
-    | ReduxDispatchMessage
-    | ReduxPrintStateMessage;
+export type RuntimeMessage = Echo | InjectState | ReduxDispatch | ReduxPrintState;
 
-export type RuntimeMessageResponse = string;
+export type RuntimeMessageResponse = {
+    ok: boolean;
+    [key: string | number | symbol]: any;
+};
 
-export type MoxfieldCard = any;
+export type ScryfallCard = {
+    artist: string;
+    scryfall_id: string;
+    set: string;
+    name: string;
+};
+
+export type MoxfieldCard = {
+    id: string;
+    uniqueCardId: string;
+};
+
+export type CardInBoardMetadata = {
+    card: MoxfieldCard & ScryfallCard;
+    boardType: string;
+    excludedFromColor: boolean;
+    finish: string;
+    isAlter: boolean;
+    isFoil: boolean;
+    isProxy: boolean;
+    quantity: number;
+    useCmcOverride: boolean;
+    useColorIdentityOverride: boolean;
+    useManaCostOverride: boolean;
+};
 
 export type ReduxAction = {
     type: string;
