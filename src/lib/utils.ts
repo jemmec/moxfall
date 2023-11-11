@@ -1,10 +1,10 @@
-function waitFor(milliseconds: number): Promise<void> {
+export const waitFor = (milliseconds: number): Promise<void> => {
     return new Promise((resolve) => {
         setTimeout(() => {
             resolve();
         }, milliseconds);
     });
-}
+};
 
 export const forceUpdateElement = async (elementId: string): Promise<void> => {
     const element = document.getElementById(elementId);
