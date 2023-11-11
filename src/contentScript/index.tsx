@@ -7,7 +7,7 @@ import "../globals.css";
 const body = document.body as HTMLBodyElement;
 body.style.position = "relative";
 const app = document.createElement("div");
-app.id = "drop-intercept";
+app.id = "moxfall-drop-intercepter";
 body.append(app);
 
 ReactDOM.createRoot(app as HTMLElement).render(<Content />);

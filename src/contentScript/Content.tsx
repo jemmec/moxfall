@@ -1,10 +1,59 @@
 import clsx from "clsx";
 import React from "react";
+import API, { DeckResponse, RefreshResponse } from "../lib/api-defs";
 
 const Content = () => {
     const dropRef = React.useRef<HTMLDivElement>(null);
-
     const [prepare, setPrepare] = React.useState<boolean>(false);
+    const [auth, setAuth] = React.useState<RefreshResponse | null>(null);
+    const [deck, setDeck] = React.useState<DeckResponse | null>(null);
+
+    /**
+     * Fetch access token for user
+     */
+    React.useEffect(() => {
+        (async () => {
+            try {
+                const res = await API.refresh().catch((err) => console.error(err));
+
+                if (!res || !res.access_token || res.access_token === "") {
+                    return;
+                }
+
+                setAuth(res);
+            } catch (error) {
+                console.error(error);
+            }
+        })();
+    }, []);
+
+    /**
+     * Fetch the current deck...
+     */
+    React.useEffect(() => {
+        if (!auth || auth === null) {
+            return;
+        }
+
+        //get publicDeckId from URL params
+        const deckId = window.location.pathname.split("/").pop();
+
+        if (!deckId) {
+            return;
+        }
+
+        (async () => {
+            const res = await API.deck(deckId, auth.access_token).catch((err) =>
+                console.error(err)
+            );
+
+            if (!res || !res.id || res.id === "") {
+                return;
+            }
+
+            setDeck(res);
+        })();
+    }, [auth]);
 
     React.useEffect(() => {
         if (!dropRef.current) {
@@ -49,6 +98,10 @@ const Content = () => {
             }
         };
     }, [dropRef.current]);
+
+    if (auth === null || deck === null) {
+        return <></>;
+    }
 
     return (
         <div
