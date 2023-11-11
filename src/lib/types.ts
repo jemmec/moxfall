@@ -31,7 +31,7 @@ export type MoxfieldCard = any;
 
 export type ReduxAction = {
     type: string;
-    payload: any;
+    [key: string | number | symbol]: unknown;
 };
 
 export type ReduxStore = {

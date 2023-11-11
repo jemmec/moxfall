@@ -126,64 +126,13 @@ const Content = () => {
 
             reduxDispatch({
                 type: "ADD_CARD_TO_BOARD_BEGIN",
-                payload: undefined
+                deck: {
+                    publicId: deck.publicId
+                },
+                board: "mainboard",
+                card: res.card,
+                quantity: 1
             });
-
-            reduxDispatch({
-                type: "ADD_CARD_TO_BOARD_BEGIN",
-                payload: {
-                    deck: {
-                        publicId: deck.publicId
-                    },
-                    board: "mainboard",
-                    card: res.card,
-                    quantity: 1
-                }
-            });
-
-            // dispatch({
-            //     type: "ADD_CARD_TO_BOARD_END",
-            //     payload: {
-            //         origin: {
-            //             deck: { publicId: "exampleDeckId" },
-            //             board: "exampleBoardType",
-            //             card: { uniqueCardId: "exampleUniqueCardId" },
-            //             quantity: 1,
-            //             headers: {
-            //                 "x-deck-has-changed": "true",
-            //                 "x-deck-version": "your-version" // replace with the actual version
-            //             }
-            //         },
-            //         data: {
-            //             tags: ["tag1", "tag2"],
-            //             collection: "exampleCollection",
-            //             card: {
-            //                 // ... your card properties
-            //             },
-            //             tokens: ["token1", "token2"],
-            //             boardType: "mainboard"
-            //         }
-            //     }
-            // });
-
-            // dispatch({
-            //     type: "dispatch",
-            //     action: {
-            //         type: "UPDATE_DECK_END",
-            //         payload: {
-            //             data: {},
-            //             headers: {
-            //                 "x-deck-version": deck.version,
-            //                 "x-deck-has-changed": true
-            //             },
-            //             origin: {
-            //                 deck: {
-            //                     ...deck
-            //                 }
-            //             }
-            //         }
-            //     }
-            // });
         },
         [auth, deck]
     );
