@@ -8,7 +8,7 @@ const SCRYFALL_API = "https://api.scryfall.com";
 
 const getScryfallCard = async (
     code: string,
-    number: number,
+    number: number | string,
     lang?: string | undefined
 ): Promise<ScryfallCard> => {
     return await fetch(`${SCRYFALL_API}/cards/${code}/${number}${lang ? `/${lang}` : ""}`).then(

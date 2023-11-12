@@ -11,6 +11,14 @@ import {
     RuntimeMessageWithCallerId
 } from "../lib/types";
 
+const body = document.body as HTMLBodyElement;
+body.style.position = "relative";
+const app = document.createElement("div");
+app.id = "drop-intercept";
+body.append(app);
+
+ReactDOM.createRoot(app as HTMLElement).render(<Content />);
+
 function genCallerId(length: number): string {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let ret = "";
@@ -66,12 +74,3 @@ export function serviceEcho(message: string): Promise<string> {
         message: message
     }).then((res) => res.message);
 }
-
-const body = document.body as HTMLBodyElement;
-body.style.position = "relative";
-body.id = "moxfall-body";
-const app = document.createElement("div");
-app.id = "moxfall-drop-intercepter";
-body.append(app);
-
-ReactDOM.createRoot(app as HTMLElement).render(<Content />);

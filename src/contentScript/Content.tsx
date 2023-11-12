@@ -1,15 +1,26 @@
 import clsx from "clsx";
 import React from "react";
 import MOXFIELD_API, { DeckResponse, RefreshResponse } from "../lib/moxfield";
-import SCRYFALL_API from "../lib/scryfall";
-import { reduxGetState } from ".";
-import { addCardToMainboard } from "../lib/moxfield/addCardToMainboard";
+import { inferCardFromUrl } from "../lib/scryfall/inferCardFromUrl";
 
 const Content = () => {
     const dropRef = React.useRef<HTMLDivElement>(null);
     const [prepare, setPrepare] = React.useState<boolean>(false);
     const [auth, setAuth] = React.useState<RefreshResponse | null>(null);
     const [deck, setDeck] = React.useState<DeckResponse | null>(null);
+
+    const handleCardDrop = React.useCallback(
+        async (url: string) => {
+            if (!auth || !deck) {
+                return;
+            }
+
+            const card = await inferCardFromUrl(new URL(url));
+
+            console.log("Scryfall Card:", card);
+        },
+        [auth, deck]
+    );
 
     /**
      * Fetch access token for user
@@ -34,7 +45,7 @@ const Content = () => {
      * Fetch the current deck...
      */
     React.useEffect(() => {
-        if (!auth || auth === null) {
+        if (!auth) {
             return;
         }
 
@@ -59,7 +70,7 @@ const Content = () => {
     }, [auth]);
 
     React.useEffect(() => {
-        if (!dropRef.current || !auth || !deck) {
+        if (!dropRef.current || !deck || !auth) {
             return;
         }
 
@@ -67,6 +78,12 @@ const Content = () => {
             event.preventDefault();
             const url = event.dataTransfer?.getData("text/plain");
             setPrepare(false);
+
+            if (!url) {
+                return;
+            }
+
+            handleCardDrop(url);
         };
 
         const handleDragOverDoc = (event: DragEvent) => {
@@ -77,11 +94,17 @@ const Content = () => {
 
         const handleMouseLeaveDoc = (event: MouseEvent) => {
             event.preventDefault();
+            if (!prepare) {
+                return;
+            }
             setPrepare(false);
         };
 
-        const handleDragLeaveDoc = (event: DragEvent) => {
+        const handleMouseEnterDoc = (event: MouseEvent) => {
             event.preventDefault();
+            if (!prepare) {
+                return;
+            }
             setPrepare(false);
         };
 
@@ -89,7 +112,7 @@ const Content = () => {
 
         document.addEventListener("dragover", handleDragOverDoc);
         document.addEventListener("mouseleave", handleMouseLeaveDoc);
-        document.addEventListener("dragleave", handleDragLeaveDoc);
+        document.addEventListener("mouseenter", handleMouseEnterDoc);
 
         return () => {
             if (dropRef.current) {
@@ -97,36 +120,10 @@ const Content = () => {
 
                 document.removeEventListener("dragover", handleDragOverDoc);
                 document.removeEventListener("mouseleave", handleMouseLeaveDoc);
-                document.removeEventListener("dragleave", handleDragLeaveDoc);
+                document.removeEventListener("mouseenter", handleMouseEnterDoc);
             }
         };
-    }, [dropRef.current, auth, deck]);
-
-    const handleAddCard = React.useCallback(async () => {
-        if (!auth || !deck) {
-            return;
-        }
-
-        const cardId = "DjJZN"; /*Arcane Signet*/
-
-        const res = await addCardToMainboard(deck, cardId, auth.access_token);
-
-        if (!res.ok) {
-            console.error(res.error);
-            return;
-        }
-
-        console.log("Successfully added card to mainboard :-)");
-    }, [auth, deck]);
-
-    const printReduxState = async () => {
-        const state = await reduxGetState();
-        console.log("Redux state: ", state);
-    };
-
-    if (auth === null || deck === null) {
-        return <></>;
-    }
+    }, [dropRef, dropRef.current, deck, auth]);
 
     return (
         <div
@@ -137,19 +134,7 @@ const Content = () => {
                     "pointer-events-auto bg-cyan-400 bg-opacity-20": prepare
                 }
             )}
-        >
-            <div className="felx gap-4">
-                <button
-                    className={clsx(
-                        "btn btn-outline btn-outline-primary",
-                        "pointer-events-auto h-min"
-                    )}
-                    onClick={() => printReduxState()}
-                >
-                    <h3>Print Redux state</h3>
-                </button>
-            </div>
-        </div>
+        ></div>
     );
 };
 
