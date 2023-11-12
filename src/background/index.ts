@@ -48,22 +48,31 @@ function injectionFn(type: string, arg?: any): RuntimeMessageResponse {
                 const a = JSON.parse(arg) as ReduxAction;
                 console.log("action", a);
                 store.dispatch(a);
+                return {
+                    ok: true,
+                    type
+                };
             }
             case "getstate": {
                 return {
-                    ok: false,
+                    ok: true,
                     type,
                     state: store.getState()
                 };
             }
+            default:
+                return {
+                    ok: false,
+                    type
+                };
         }
     } catch (err) {
         console.log("Injection function failed: " + err);
+        return {
+            ok: false,
+            type
+        };
     }
-    return {
-        ok: true,
-        type
-    };
 }
 
 chrome.runtime.onMessage.addListener((message: RuntimeMessage) => {

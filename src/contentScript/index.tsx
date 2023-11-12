@@ -35,6 +35,10 @@ function internalActionMessage(message: RuntimeMessage): Promise<RuntimeMessageR
             if (response.callerId !== callerId && response.type !== message.type) {
                 return;
             }
+            if (!response.ok) {
+                reject();
+                return;
+            }
             resolve(response as any);
             chrome.runtime.onMessage.removeListener(handle);
         };
