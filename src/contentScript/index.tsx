@@ -19,6 +19,17 @@ body.append(app);
 
 ReactDOM.createRoot(app as HTMLElement).render(<Content />);
 
+const locationChangeEvent = new Event("locationchanged");
+
+let lastUrl = "_";
+new MutationObserver(() => {
+    const url = location.href;
+    if (url !== lastUrl) {
+        lastUrl = url;
+        document.dispatchEvent(locationChangeEvent);
+    }
+}).observe(document, { subtree: true, childList: true });
+
 function genCallerId(length: number): string {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let ret = "";

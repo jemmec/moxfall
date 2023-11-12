@@ -5,9 +5,29 @@ import { ALLOWED_HOSTS, getQueryString, inferCardFromUrl } from "../lib/scryfall
 
 const Content = () => {
     const dropRef = React.useRef<HTMLDivElement>(null);
+    const [publicDeckId, setPublicDeckId] = React.useState<string | null>(null);
     const [prepare, setPrepare] = React.useState<boolean>(false);
     const [auth, setAuth] = React.useState<RefreshResponse | null>(null);
     const [deck, setDeck] = React.useState<DeckResponse | null>(null);
+
+    React.useEffect(() => {
+        const handleLocationChange = () => {
+            const route = location.pathname;
+            if (!route.includes("decks")) {
+                setPublicDeckId(null);
+                return;
+            }
+            const end = route.split("/").pop() ?? null;
+
+            setPublicDeckId(end);
+        };
+
+        document.addEventListener("locationchanged", handleLocationChange);
+
+        return () => {
+            document.removeEventListener("locationchanged", handleLocationChange);
+        };
+    }, []);
 
     const handleCardDrop = React.useCallback(
         async (url: URL) => {
@@ -76,22 +96,18 @@ const Content = () => {
     }, []);
 
     /**
-     * Fetch the current deck...
+     * Fetch the current deck
      */
     React.useEffect(() => {
-        if (!auth) {
-            return;
-        }
-
-        //get publicDeckId from URL params
-        const deckId = window.location.pathname.split("/").pop();
-
-        if (!deckId) {
+        if (!auth || !publicDeckId) {
+            if (deck) {
+                setDeck(null);
+            }
             return;
         }
 
         (async () => {
-            const res = await MOXFIELD_API.deck(deckId, auth.access_token).catch((err) =>
+            const res = await MOXFIELD_API.deck(publicDeckId, auth.access_token).catch((err) =>
                 console.error(err)
             );
 
@@ -101,78 +117,84 @@ const Content = () => {
 
             setDeck(res);
         })();
-    }, [auth]);
+    }, [auth, publicDeckId]);
 
-    React.useEffect(() => {
-        if (!dropRef.current || !deck || !auth) {
+    const handleDrop = (event: DragEvent) => {
+        setPrepare(false);
+        event.preventDefault();
+        const data = event.dataTransfer?.getData("text/plain");
+
+        if (!data) {
             return;
         }
 
-        const handleDrop = (event: DragEvent) => {
-            setPrepare(false);
-            event.preventDefault();
-            const data = event.dataTransfer?.getData("text/plain");
+        let url = null;
+        try {
+            url = new URL(data);
+        } catch (err) {
+            return;
+        }
 
-            if (!data) {
-                return;
-            }
+        if (
+            !url ||
+            !url.host ||
+            !ALLOWED_HOSTS.includes(url.host) ||
+            !url.pathname ||
+            url.pathname === ""
+        ) {
+            return;
+        }
 
-            let url = null;
-            try {
-                url = new URL(data);
-            } catch (err) {
-                return;
-            }
+        handleCardDrop(new URL(url));
+    };
 
-            if (
-                !url ||
-                !url.host ||
-                !ALLOWED_HOSTS.includes(url.host) ||
-                !url.pathname ||
-                url.pathname === ""
-            ) {
-                return;
-            }
+    const handleDragOverDoc = (event: DragEvent) => {
+        event.preventDefault();
+        event.dataTransfer!.dropEffect = "copy";
+        setPrepare(true);
+    };
 
-            handleCardDrop(new URL(url));
-        };
+    const handleMouseLeaveDoc = (event: MouseEvent) => {
+        event.preventDefault();
+        setPrepare(false);
+    };
 
-        const handleDragOverDoc = (event: DragEvent) => {
-            event.preventDefault();
-            event.dataTransfer!.dropEffect = "copy";
-            setPrepare(true);
-        };
+    const handleMouseEnterDoc = (event: MouseEvent) => {
+        event.preventDefault();
+        setPrepare(false);
+    };
 
-        const handleMouseLeaveDoc = (event: MouseEvent) => {
-            event.preventDefault();
-            setPrepare(false);
-        };
-
-        const handleMouseEnterDoc = (event: MouseEvent) => {
-            event.preventDefault();
-            setPrepare(false);
-        };
+    /**
+     * Only create the drop listeners if we have ALL the parts...
+     */
+    React.useEffect(() => {
+        if (!dropRef.current || !deck || !auth || !publicDeckId) {
+            removeListeners();
+            return;
+        }
 
         dropRef.current.addEventListener("drop", handleDrop);
         dropRef.current.addEventListener("mouseleave", handleMouseLeaveDoc);
         dropRef.current.addEventListener("mouseenter", handleMouseEnterDoc);
-
         document.addEventListener("dragover", handleDragOverDoc);
         document.addEventListener("mouseleave", handleMouseLeaveDoc);
         document.addEventListener("mouseenter", handleMouseEnterDoc);
 
         return () => {
-            if (dropRef.current) {
-                dropRef.current.removeEventListener("drop", handleDrop);
-                dropRef.current.removeEventListener("mouseleave", handleMouseLeaveDoc);
-                dropRef.current.removeEventListener("mouseenter", handleMouseEnterDoc);
-
-                document.removeEventListener("dragover", handleDragOverDoc);
-                document.removeEventListener("mouseleave", handleMouseLeaveDoc);
-                document.removeEventListener("mouseenter", handleMouseEnterDoc);
-            }
+            removeListeners();
         };
-    }, [dropRef, dropRef.current, deck, auth]);
+    }, [dropRef, dropRef.current, deck, auth, publicDeckId]);
+
+    const removeListeners = () => {
+        if (dropRef.current) {
+            dropRef.current.removeEventListener("drop", handleDrop);
+            dropRef.current.removeEventListener("mouseleave", handleMouseLeaveDoc);
+            dropRef.current.removeEventListener("mouseenter", handleMouseEnterDoc);
+            document.removeEventListener("dragover", handleDragOverDoc);
+            document.removeEventListener("mouseleave", handleMouseLeaveDoc);
+            document.removeEventListener("mouseenter", handleMouseEnterDoc);
+        }
+    };
 
     return (
         <div
