@@ -55,15 +55,23 @@ export async function addCardToMainboard(
         signal: {}
     };
 
-    let success = await reduxDispatch({
+    const origin = {
         type: "ADD_CARD_TO_BOARD_BEGIN",
         deck: deck,
         board: "mainboard",
         card: card,
         quantity: 1,
-        authenticate: true,
-        request
-    });
+        authenticate: true
+
+        /**
+         * We omit the request to prevent Moxfield making
+         * its own requests to add the card to mainboard,
+         * causing a duplication error.
+         */
+        // request
+    };
+
+    let success = await reduxDispatch(origin);
 
     if (!success) {
         return {
@@ -104,19 +112,9 @@ export async function addCardToMainboard(
             "x-deck-has-changed": "false",
             "x-deck-version": deck.version + 1 //Assumed version increment here
         },
-
-        //NOTE TO SELF:
-        //   The origin is just the ADD_CARD_TO_BOARD_BEGIN
-        //   action object but with type changed to ADD_CARD_TO_BOARD
-
         origin: {
-            type: "ADD_CARD_TO_BOARD",
-            deck: deck,
-            board: "mainboard",
-            card: card,
-            quantity: 1,
-            authenticate: true,
-            request
+            ...origin,
+            type: "ADD_CARD_TO_BOARD"
         }
     });
 

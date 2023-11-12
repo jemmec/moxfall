@@ -46,7 +46,6 @@ function reduxInjectionFn(type: string, arg?: any): RuntimeMessageResponse {
         switch (type) {
             case "dispatch": {
                 const a = JSON.parse(arg) as ReduxAction;
-                console.log("action", a);
                 store.dispatch(a);
                 return {
                     ok: true,
@@ -67,7 +66,7 @@ function reduxInjectionFn(type: string, arg?: any): RuntimeMessageResponse {
                 };
         }
     } catch (err) {
-        console.log("Injection function failed: " + err);
+        console.error("Injection function failed: " + err);
         return {
             ok: false,
             type
@@ -84,7 +83,6 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage) => {
             break;
         case "dispatch":
             {
-                console.log("Attempting to call dispatch on redux state, wish me some luck!");
                 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
                     const activeTabId = tabs[0] ? tabs[0].id ?? -1 : -1;
                     chrome.scripting.executeScript<[string, string], RuntimeMessageResponse>(

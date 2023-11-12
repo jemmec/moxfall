@@ -34,7 +34,7 @@ const Content = () => {
                 return;
             }
 
-            if (!results.data || results.data.length < 1 || !results.exactMatch) {
+            if ((!results.data || results.data.length < 1) && !results.exactMatch) {
                 console.error(`Got correct response but there was no card?`);
                 return;
             }
