@@ -2,7 +2,7 @@ import { ReduxAction, ReduxStore, RuntimeMessage, RuntimeMessageResponse } from 
 
 console.log("Background service started!");
 
-function injectionFn(type: string, arg?: any): RuntimeMessageResponse {
+function reduxInjectionFn(type: string, arg?: any): RuntimeMessageResponse {
     const ELEMENT_ID = "js-reactroot";
     const reactRoot = document.getElementById(ELEMENT_ID) as any; // Force any here
 
@@ -92,7 +92,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage) => {
                             world: "MAIN",
                             target: { tabId: activeTabId },
                             args: [message.type, JSON.stringify(message.action)],
-                            func: injectionFn
+                            func: reduxInjectionFn
                         },
                         (results) => {
                             chrome.tabs.sendMessage<RuntimeMessageResponse>(
@@ -112,7 +112,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage) => {
                         world: "MAIN",
                         target: { tabId: activeTabId },
                         args: [message.type],
-                        func: injectionFn
+                        func: reduxInjectionFn
                     },
                     (results) => {
                         chrome.tabs.sendMessage<RuntimeMessageResponse>(

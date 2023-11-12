@@ -100,51 +100,75 @@ const Content = () => {
         };
     }, [dropRef.current]);
 
-    const test_addCard = React.useCallback(
-        async (cardId: string) => {
-            if (!auth || !deck) {
-                return;
-            }
+    const test_addCard = React.useCallback(async () => {
+        if (!auth || !deck) {
+            return;
+        }
 
-            const res = await API.mainboard(
-                {
-                    cardId,
-                    quantity: 1,
-                    userPrefPrinting: true
-                },
-                deck.id,
-                auth.access_token
-            ).catch((err) => console.error(err));
+        const res = await API.mainboard(
+            {
+                cardId: "DjJZN" /*Arcane Signet*/,
+                quantity: 1,
+                userPrefPrinting: true
+            },
+            deck.id,
+            auth.access_token
+        ).catch((err) => console.error(err));
 
-            if (!res || !res.card) {
-                console.error("Adding card to mainboard was not successfull");
-                return;
-            }
+        if (!res || !res.card) {
+            console.error("Adding card to mainboard was not successfull");
+            return;
+        }
 
-            console.log("the card", res.card);
-            console.log("the deck", deck);
+        console.log("the card", res.card);
+        console.log("the deck", deck);
 
-            console.log("Before dispatch");
+        console.log("Before dispatch");
 
-            const success = await reduxDispatch({
-                type: "ADD_CARD_TO_BOARD_BEGIN",
-                deck: {
-                    publicId: deck.publicId
-                },
+        let success = await reduxDispatch({
+            type: "ADD_CARD_TO_BOARD_BEGIN",
+            deck: {
+                publicId: deck.publicId
+            },
+            authenticate: true,
+            board: "mainboard",
+            card: res.card.card,
+            quantity: 1
+        });
+
+        console.log("After dispatch");
+
+        if (!success) {
+            console.log("Failed to ADD_CARD_TO_BOARD_BEGIN");
+            return;
+        }
+
+        success = await reduxDispatch({
+            type: "ADD_CARD_TO_BOARD_END",
+            origin: {
+                deck: deck,
                 board: "mainboard",
                 card: res.card.card,
-                quantity: 1
-            });
-
-            console.log("After dispatch");
-
-            if (!success) {
-                console.log("Failed to redux my dispatch");
-                return;
+                quantity: 1,
+                headers: {
+                    "x-deck-has-changed": "true",
+                    "x-deck-version": deck.version
+                }
+            },
+            data: {
+                tags: [],
+                collection: "",
+                card: res.card.card,
+                tokens: [],
+                boardType: "mainboard"
             }
-        },
-        [auth, deck]
-    );
+        });
+
+        if (!success) {
+            console.log("Failed to ADD_CARD_TO_BOARD_END");
+            return;
+        }
+    }, [auth, deck]);
 
     const printReduxState = async () => {
         const state = await reduxGetState();
@@ -171,7 +195,7 @@ const Content = () => {
                         "btn btn-outline btn-outline-primary",
                         "pointer-events-auto h-min"
                     )}
-                    onClick={() => test_addCard("DjJZN" /*Arcane Signet*/)}
+                    onClick={() => test_addCard()}
                 >
                     <h3>Add Arcane Signet</h3>
                 </button>
