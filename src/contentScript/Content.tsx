@@ -211,12 +211,12 @@ const Content = () => {
             <div className="p-8 gap-8 flex flex-col w-full h-full">
                 <div
                     className={clsx("w-full h-full", {
-                        "bg-green-600 bg-opacity-10": isHovering === "add"
+                        "rounded-lg bg-green-600 bg-opacity-10": isHovering === "add"
                     })}
                     onDragEnter={() => setIsHovering("add")}
                     onDragLeave={() => setIsHovering("none")}
                 >
-                    <div className="w-full h-full border-4 border-dashed border-opacity-80 border-green-600 flex justify-center items-center">
+                    <div className="rounded-lg w-full h-full border-4 border-dashed border-opacity-80 border-green-600 flex justify-center items-center pointer-events-none">
                         <h1 className="text-green-600 text-6xl font-bold">ADD CARD</h1>
                     </div>
                 </div>
