@@ -2,7 +2,8 @@ import clsx from "clsx";
 import React from "react";
 import MOXFIELD_API, { DeckResponse, RefreshResponse } from "../lib/moxfield";
 import SCRYFALL_API from "../lib/scryfall";
-import { reduxDispatch, reduxGetState } from ".";
+import { reduxGetState } from ".";
+import { addCardToMainboard } from "../lib/moxfield/addCardToMainboard";
 
 const Content = () => {
     const dropRef = React.useRef<HTMLDivElement>(null);
@@ -58,7 +59,7 @@ const Content = () => {
     }, [auth]);
 
     React.useEffect(() => {
-        if (!dropRef.current) {
+        if (!dropRef.current || !auth || !deck) {
             return;
         }
 
@@ -99,114 +100,23 @@ const Content = () => {
                 document.removeEventListener("dragleave", handleDragLeaveDoc);
             }
         };
-    }, [dropRef.current]);
+    }, [dropRef.current, auth, deck]);
 
-    const test_addCard = React.useCallback(async () => {
+    const handleAddCard = React.useCallback(async () => {
         if (!auth || !deck) {
             return;
         }
 
         const cardId = "DjJZN"; /*Arcane Signet*/
 
-        //MAKE REQUEST TO GET THE CARD
+        const res = await addCardToMainboard(deck, cardId, auth.access_token);
 
-        const card = await MOXFIELD_API.getMoxfieldCard(cardId, auth.access_token).catch((err) =>
-            console.error(err)
-        );
-
-        if (!card || !card.card) {
-            console.error("The card we fetched was null");
+        if (!res.ok) {
+            console.error(res.error);
             return;
         }
 
-        //DISPATCH BEGIN
-
-        const request = {
-            url: `/v2/decks/n4nPKx/cards/mainboard`,
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${auth.access_token}`,
-                "X-Public-Deck-ID": deck.publicId,
-                "X-Deck-Version": deck.version
-            },
-            data: {
-                cardId: card.card.id,
-                quantity: 1,
-                usePrefPrinting: true
-            },
-            withCredentials: true,
-            signal: {}
-        };
-
-        let success = await reduxDispatch({
-            type: "ADD_CARD_TO_BOARD_BEGIN",
-            deck: deck,
-            board: "mainboard",
-            card: card.card,
-            quantity: 1,
-            authenticate: true,
-            request
-        });
-
-        if (!success) {
-            console.log("Failed to ADD_CARD_TO_BOARD_BEGIN");
-            return;
-        }
-
-        //MAKE REQUEST TO MAINBOARD
-
-        const res = await MOXFIELD_API.mainboard(
-            {
-                cardId,
-                quantity: 1,
-                userPrefPrinting: true
-            },
-            deck.id,
-            auth.access_token
-        ).catch((err) => console.error(err));
-
-        if (!res || !res.card) {
-            console.error("Adding card to mainboard was not successfull");
-            return;
-        }
-
-        //DISPATCH END
-
-        success = await reduxDispatch({
-            type: "ADD_CARD_TO_BOARD_END",
-            data: {
-                tags: [],
-                collection: "",
-                card: res.card,
-                tokens: [],
-                boardType: "mainboard"
-            },
-            headers: {
-                "cache-control": "no-store",
-                "content-type": "application/json; charset=utf-8",
-                "x-deck-has-changed": "false",
-                "x-deck-version": deck.version + 1 //Assumed version increment here
-            },
-
-            //NOTE TO SELF:
-            //   The origin is just the ADD_CARD_TO_BOARD_BEGIN
-            //   action object but with type changed to ADD_CARD_TO_BOARD
-
-            origin: {
-                type: "ADD_CARD_TO_BOARD",
-                deck: deck,
-                board: "mainboard",
-                card: card.card,
-                quantity: 1,
-                authenticate: true,
-                request
-            }
-        });
-
-        if (!success) {
-            console.log("Failed to ADD_CARD_TO_BOARD_END");
-            return;
-        }
+        console.log("Successfully added card to mainboard :-)");
     }, [auth, deck]);
 
     const printReduxState = async () => {
@@ -229,15 +139,6 @@ const Content = () => {
             )}
         >
             <div className="felx gap-4">
-                <button
-                    className={clsx(
-                        "btn btn-outline btn-outline-primary",
-                        "pointer-events-auto h-min"
-                    )}
-                    onClick={() => test_addCard()}
-                >
-                    <h3>Add Arcane Signet</h3>
-                </button>
                 <button
                     className={clsx(
                         "btn btn-outline btn-outline-primary",
