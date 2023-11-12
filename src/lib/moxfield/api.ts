@@ -1,9 +1,10 @@
 import {
+    DeckResponse,
+    GetCardResponse,
+    GetMultipleCardResponse,
     MainboardPayload,
     Mainboardresponse,
-    RefreshResponse,
-    DeckResponse,
-    GetCardResponse
+    RefreshResponse
 } from "./types";
 
 const MOXFIELD_API = "https://api2.moxfield.com";
@@ -63,14 +64,28 @@ const getMoxfieldCard = async (cardId: string, accessToken: string): Promise<Get
         }
     }).then(async (res) => {
         const j = await res.json();
-        console.log("The card we fetched was", j);
+        // console.log("The card we fetched was", j);
         return j as unknown as GetCardResponse;
     });
+};
+
+const getMoxfieldCardsSearch = async (
+    q: string,
+    accessToken: string
+): Promise<GetMultipleCardResponse> => {
+    return await fetch(`${MOXFIELD_API}/v2/cards/search/user?q=${q}`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            Authorization: `bearer ${accessToken}`
+        }
+    }).then((res) => res.json() as unknown as GetMultipleCardResponse);
 };
 
 export default {
     refresh,
     deck,
     mainboard,
-    getMoxfieldCard
+    getMoxfieldCard,
+    getMoxfieldCardsSearch
 };

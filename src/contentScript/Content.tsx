@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import React from "react";
-import MOXFIELD_API, { DeckResponse, RefreshResponse } from "../lib/moxfield";
-import { inferCardFromUrl } from "../lib/scryfall/inferCardFromUrl";
+import MOXFIELD_API, { DeckResponse, RefreshResponse, addCardToMainboard } from "../lib/moxfield";
+import { ALLOWED_HOSTS, getQueryString, inferCardFromUrl } from "../lib/scryfall";
 
 const Content = () => {
     const dropRef = React.useRef<HTMLDivElement>(null);
@@ -10,21 +10,48 @@ const Content = () => {
     const [deck, setDeck] = React.useState<DeckResponse | null>(null);
 
     const handleCardDrop = React.useCallback(
-        async (url: string) => {
+        async (url: URL) => {
             if (!auth || !deck) {
                 return;
             }
 
-            const card = await inferCardFromUrl(new URL(url));
+            const card = await inferCardFromUrl(url);
 
             if (card === null) {
                 console.error("Scryfall card was null");
                 return;
             }
 
-            //using details from the scryfall card, fetch the moxfield card...
+            const query = getQueryString(card);
 
-            console.log("Scryfall Card:", card);
+            //using details from the scryfall card, fetch the moxfield card...
+            const results = await MOXFIELD_API.getMoxfieldCardsSearch(query, auth.access_token);
+
+            if (results.status || results.code) {
+                console.error(
+                    `Failed get card from moxfield search ${results.code}, query was ${query}`
+                );
+                return;
+            }
+
+            if (!results.data || results.data.length < 1 || !results.exactMatch) {
+                console.error(`Got correct response but there was no card?`);
+                return;
+            }
+
+            const res = await addCardToMainboard(
+                deck,
+                results.exactMatch ? results.exactMatch : results.data[0],
+                auth.access_token
+            );
+
+            if (!res.ok) {
+                console.error(`Failed to add card to mainboard: ${res.error}`);
+                return;
+            }
+
+            //SUCCESSFULL!
+            console.log(`SUCCESSFULLY ADDED ${card.name} TO THE MAINBOARD!`);
         },
         [auth, deck]
     );
@@ -82,15 +109,32 @@ const Content = () => {
         }
 
         const handleDrop = (event: DragEvent) => {
-            event.preventDefault();
-            const url = event.dataTransfer?.getData("text/plain");
             setPrepare(false);
+            event.preventDefault();
+            const data = event.dataTransfer?.getData("text/plain");
 
-            if (!url) {
+            if (!data) {
                 return;
             }
 
-            handleCardDrop(url);
+            let url = null;
+            try {
+                url = new URL(data);
+            } catch (err) {
+                return;
+            }
+
+            if (
+                !url ||
+                !url.host ||
+                !ALLOWED_HOSTS.includes(url.host) ||
+                !url.pathname ||
+                url.pathname === ""
+            ) {
+                return;
+            }
+
+            handleCardDrop(new URL(url));
         };
 
         const handleDragOverDoc = (event: DragEvent) => {

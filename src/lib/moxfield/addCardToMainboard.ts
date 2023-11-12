@@ -1,5 +1,6 @@
-import MOXFIELD_API, { DeckResponse } from ".";
+import MOXFIELD_API, { DeckResponse, MoxfieldCard } from ".";
 import { reduxDispatch } from "../../contentScript";
+import { ScryfallCard } from "../scryfall";
 
 export type AddCardToBoardSuccess = {
     ok: true;
@@ -27,23 +28,15 @@ export type AddCardToBoardResults = AddCardToBoardSuccess | AddCardToBoardFail;
  */
 export async function addCardToMainboard(
     deck: DeckResponse,
-    cardId: string,
+    card: ScryfallCard & MoxfieldCard,
     accessToken: string
 ): Promise<AddCardToBoardResults> {
-    //MAKE REQUEST TO GET THE CARD
-
-    const card = await MOXFIELD_API.getMoxfieldCard(cardId, accessToken).catch((err) =>
-        console.error(err)
-    );
-
-    if (!card || !card.card) {
+    if (!card) {
         return {
             ok: false,
-            error: "The card we fetched was null"
+            error: "The card was null"
         };
     }
-
-    //DISPATCH BEGIN
 
     const request = {
         url: `/v2/decks/n4nPKx/cards/mainboard`,
@@ -54,7 +47,7 @@ export async function addCardToMainboard(
             "X-Deck-Version": deck.version
         },
         data: {
-            cardId: card.card.id,
+            cardId: card.id,
             quantity: 1,
             usePrefPrinting: true
         },
@@ -66,7 +59,7 @@ export async function addCardToMainboard(
         type: "ADD_CARD_TO_BOARD_BEGIN",
         deck: deck,
         board: "mainboard",
-        card: card.card,
+        card: card,
         quantity: 1,
         authenticate: true,
         request
@@ -79,11 +72,9 @@ export async function addCardToMainboard(
         };
     }
 
-    //MAKE REQUEST TO MAINBOARD
-
     const res = await MOXFIELD_API.mainboard(
         {
-            cardId,
+            cardId: card.id,
             quantity: 1,
             userPrefPrinting: true
         },
@@ -97,8 +88,6 @@ export async function addCardToMainboard(
             error: "Adding card to mainboard was not successfull"
         };
     }
-
-    //DISPATCH END
 
     success = await reduxDispatch({
         type: "ADD_CARD_TO_BOARD_END",
@@ -124,7 +113,7 @@ export async function addCardToMainboard(
             type: "ADD_CARD_TO_BOARD",
             deck: deck,
             board: "mainboard",
-            card: card.card,
+            card: card,
             quantity: 1,
             authenticate: true,
             request

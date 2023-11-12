@@ -1,4 +1,4 @@
-import { ScryfallCard } from "../scryfall/types";
+import { ScryfallCard, ScryfallError } from "../scryfall/types";
 
 export type MoxfieldCard = {
     id: string;
@@ -34,10 +34,18 @@ export type DeckResponse = {
     version: number;
     visibility: boolean;
 };
+
 export type GetCardResponse = {
     card: MoxfieldCard & ScryfallCard;
     editions: any[];
 };
+
+export type GetMultipleCardResponse = {
+    hasMore: boolean;
+    totalCards: number;
+    data: (MoxfieldCard & ScryfallCard)[];
+    exactMatch: MoxfieldCard & ScryfallCard;
+} & ScryfallError;
 
 export type CardInBoardMetadata = {
     card: MoxfieldCard & ScryfallCard;

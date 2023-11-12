@@ -13,6 +13,9 @@ export type ScryfallCard = {
     oracle_id: string;
     set: string;
     name: string;
+    set_name: string;
+    set_id: string;
+    collector_number: string;
 };
 
 export type ScryfallResponse = ScryfallCard | ScryfallError;
