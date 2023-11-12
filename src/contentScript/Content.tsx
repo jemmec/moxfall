@@ -220,17 +220,6 @@ const Content = () => {
                         <h1 className="text-green-600 text-6xl font-bold">ADD CARD</h1>
                     </div>
                 </div>
-                <div
-                    className={clsx("w-full h-full", {
-                        "bg-red-600 bg-opacity-30": isHovering === "cancel"
-                    })}
-                    onDragEnter={() => setIsHovering("cancel")}
-                    onDragLeave={() => setIsHovering("none")}
-                >
-                    <div className="w-full h-full border-4 border-dashed border-opacity-80 border-red-600 flex justify-center items-center">
-                        <h1 className="text-red-600 text-6xl font-bold">CANCEL</h1>
-                    </div>
-                </div>
             </div>
         </div>
     );
