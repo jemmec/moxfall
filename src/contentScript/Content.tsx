@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import React from "react";
 import API, { DeckResponse, RefreshResponse } from "../lib/api-defs";
-import { reduxDispatch, reduxPrintState } from ".";
+import { reduxDispatch, reduxGetState } from ".";
 
 const Content = () => {
     const dropRef = React.useRef<HTMLDivElement>(null);
@@ -124,6 +124,8 @@ const Content = () => {
             console.log("the card", res.card);
             console.log("the deck", deck);
 
+            console.log("Before dispatch");
+
             const success = await reduxDispatch({
                 type: "ADD_CARD_TO_BOARD_BEGIN",
                 deck: {
@@ -134,6 +136,8 @@ const Content = () => {
                 quantity: 1
             });
 
+            console.log("After dispatch");
+
             if (!success) {
                 console.log("Failed to redux my dispatch");
                 return;
@@ -141,6 +145,11 @@ const Content = () => {
         },
         [auth, deck]
     );
+
+    const printReduxState = async () => {
+        const state = await reduxGetState();
+        console.log("Redux state: ", state);
+    };
 
     if (auth === null || deck === null) {
         return <></>;
@@ -171,7 +180,7 @@ const Content = () => {
                         "btn btn-outline btn-outline-primary",
                         "pointer-events-auto h-min"
                     )}
-                    onClick={() => reduxPrintState()}
+                    onClick={() => printReduxState()}
                 >
                     <h3>Print Redux state</h3>
                 </button>

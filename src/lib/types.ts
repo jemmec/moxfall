@@ -15,16 +15,23 @@ type ReduxDispatch = {
     action: ReduxAction;
 };
 
-type ReduxPrintState = {
-    type: "printstate";
+type ReduxGetState = {
+    type: "getstate";
 };
 
-export type RuntimeMessage = Echo | InjectState | ReduxDispatch | ReduxPrintState;
+export type RuntimeMessage = Echo | InjectState | ReduxDispatch | ReduxGetState;
+
+export type RuntimeMessageWithCallerId = { callerId: string } & RuntimeMessage;
 
 export type RuntimeMessageResponse = {
+    type: string;
     ok: boolean;
     [key: string | number | symbol]: any;
 };
+
+export type RuntimeMessageResponseWithCallerId = {
+    callerId: string;
+} & RuntimeMessageResponse;
 
 export type ScryfallCard = {
     artist: string;
