@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import React from "react";
-import API, { DeckResponse, RefreshResponse } from "../lib/api-defs";
+import MOXFIELD_API, { DeckResponse, RefreshResponse } from "../lib/moxfield";
+import SCRYFALL_API from "../lib/scryfall";
 import { reduxDispatch, reduxGetState } from ".";
 
 const Content = () => {
@@ -15,7 +16,7 @@ const Content = () => {
     React.useEffect(() => {
         (async () => {
             try {
-                const res = await API.refresh().catch((err) => console.error(err));
+                const res = await MOXFIELD_API.refresh().catch((err) => console.error(err));
 
                 if (!res || !res.access_token || res.access_token === "") {
                     return;
@@ -44,7 +45,7 @@ const Content = () => {
         }
 
         (async () => {
-            const res = await API.deck(deckId, auth.access_token).catch((err) =>
+            const res = await MOXFIELD_API.deck(deckId, auth.access_token).catch((err) =>
                 console.error(err)
             );
 
@@ -109,7 +110,7 @@ const Content = () => {
 
         //MAKE REQUEST TO GET THE CARD
 
-        const card = await API.getCard(cardId, auth.access_token).catch((err) =>
+        const card = await MOXFIELD_API.getMoxfieldCard(cardId, auth.access_token).catch((err) =>
             console.error(err)
         );
 
@@ -154,7 +155,7 @@ const Content = () => {
 
         //MAKE REQUEST TO MAINBOARD
 
-        const res = await API.mainboard(
+        const res = await MOXFIELD_API.mainboard(
             {
                 cardId,
                 quantity: 1,

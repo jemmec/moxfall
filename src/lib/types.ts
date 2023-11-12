@@ -33,32 +33,6 @@ export type RuntimeMessageResponseWithCallerId = {
     callerId: string;
 } & RuntimeMessageResponse;
 
-export type ScryfallCard = {
-    artist: string;
-    scryfall_id: string;
-    set: string;
-    name: string;
-};
-
-export type MoxfieldCard = {
-    id: string;
-    uniqueCardId: string;
-};
-
-export type CardInBoardMetadata = {
-    card: MoxfieldCard & ScryfallCard;
-    boardType: string;
-    excludedFromColor: boolean;
-    finish: string;
-    isAlter: boolean;
-    isFoil: boolean;
-    isProxy: boolean;
-    quantity: number;
-    useCmcOverride: boolean;
-    useColorIdentityOverride: boolean;
-    useManaCostOverride: boolean;
-};
-
 export type ReduxAction = {
     type: string;
     [key: string | number | symbol]: unknown;
