@@ -105,9 +105,58 @@ const Content = () => {
             return;
         }
 
+        const cardId = "DjJZN"; /*Arcane Signet*/
+
+        //MAKE REQUEST TO GET THE CARD
+
+        const card = await API.getCard(cardId, auth.access_token).catch((err) =>
+            console.error(err)
+        );
+
+        if (!card || !card.card) {
+            console.error("The card we fetched was null");
+            return;
+        }
+
+        //DISPATCH BEGIN
+
+        const request = {
+            url: `/v2/decks/n4nPKx/cards/mainboard`,
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${auth.access_token}`,
+                "X-Public-Deck-ID": deck.publicId,
+                "X-Deck-Version": deck.version
+            },
+            data: {
+                cardId: card.card.id,
+                quantity: 1,
+                usePrefPrinting: true
+            },
+            withCredentials: true,
+            signal: {}
+        };
+
+        let success = await reduxDispatch({
+            type: "ADD_CARD_TO_BOARD_BEGIN",
+            deck: deck,
+            board: "mainboard",
+            card: card.card,
+            quantity: 1,
+            authenticate: true,
+            request
+        });
+
+        if (!success) {
+            console.log("Failed to ADD_CARD_TO_BOARD_BEGIN");
+            return;
+        }
+
+        //MAKE REQUEST TO MAINBOARD
+
         const res = await API.mainboard(
             {
-                cardId: "DjJZN" /*Arcane Signet*/,
+                cardId,
                 quantity: 1,
                 userPrefPrinting: true
             },
@@ -120,47 +169,36 @@ const Content = () => {
             return;
         }
 
-        console.log("the card", res.card);
-        console.log("the deck", deck);
-
-        console.log("Before dispatch");
-
-        let success = await reduxDispatch({
-            type: "ADD_CARD_TO_BOARD_BEGIN",
-            deck: {
-                publicId: deck.publicId
-            },
-            authenticate: true,
-            board: "mainboard",
-            card: res.card.card,
-            quantity: 1
-        });
-
-        console.log("After dispatch");
-
-        if (!success) {
-            console.log("Failed to ADD_CARD_TO_BOARD_BEGIN");
-            return;
-        }
+        //DISPATCH END
 
         success = await reduxDispatch({
             type: "ADD_CARD_TO_BOARD_END",
-            origin: {
-                deck: deck,
-                board: "mainboard",
-                card: res.card.card,
-                quantity: 1,
-                headers: {
-                    "x-deck-has-changed": "true",
-                    "x-deck-version": deck.version
-                }
-            },
             data: {
                 tags: [],
                 collection: "",
-                card: res.card.card,
+                card: res.card,
                 tokens: [],
                 boardType: "mainboard"
+            },
+            headers: {
+                "cache-control": "no-store",
+                "content-type": "application/json; charset=utf-8",
+                "x-deck-has-changed": "false",
+                "x-deck-version": deck.version + 1 //Assumed version increment here...
+            },
+
+            //NOTE TO SELF:
+            //   The origin is just the ADD_CARD_TO_BOARD_BEGIN
+            //   action object but with type changed to ADD_CARD_TO_BOARD
+
+            origin: {
+                type: "ADD_CARD_TO_BOARD",
+                deck: deck,
+                board: "mainboard",
+                card: card.card,
+                quantity: 1,
+                authenticate: true,
+                request
             }
         });
 

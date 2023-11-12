@@ -1,4 +1,4 @@
-import { CardInBoardMetadata, MoxfieldCard } from "./types";
+import { CardInBoardMetadata, MoxfieldCard, ScryfallCard } from "./types";
 
 const SCRYFALL_API = "https://api.scryfall.com";
 const MOXFIELD_API = "https://api2.moxfield.com";
@@ -17,7 +17,7 @@ export type MainboardPayload = {
     userPrefPrinting: boolean;
 };
 
-export type CardResponse = {
+export type Mainboardresponse = {
     card: CardInBoardMetadata;
     collection: any[];
     tags: any[];
@@ -28,7 +28,7 @@ const mainboard = async (
     payload: MainboardPayload,
     privateDeckId: string,
     accessToken: string
-): Promise<CardResponse> => {
+): Promise<Mainboardresponse> => {
     const res = await fetch(`${MOXFIELD_API}/v2/decks/${privateDeckId}/cards/mainboard`, {
         method: "POST",
         credentials: "include",
@@ -37,7 +37,7 @@ const mainboard = async (
             "Content-Type": "application/json",
             Authorization: `bearer ${accessToken}`
         }
-    }).then((res) => res.json() as unknown as CardResponse);
+    }).then((res) => res.json() as unknown as Mainboardresponse);
     return res;
 };
 
@@ -84,10 +84,30 @@ const deck = async (publicDeckId: string, accessToken: string): Promise<DeckResp
     return res;
 };
 
+export type GetCardResponse = {
+    card: MoxfieldCard & ScryfallCard;
+    editions: any[];
+};
+
+const getCard = async (cardId: string, accessToken: string): Promise<GetCardResponse> => {
+    return await fetch(`${MOXFIELD_API}/v2/cards/details/${cardId}`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            Authorization: `bearer ${accessToken}`
+        }
+    }).then(async (res) => {
+        const j = await res.json();
+        console.log("The card we fetched was", j);
+        return j as unknown as GetCardResponse;
+    });
+};
+
 export default {
     refresh,
     deck,
     mainboard,
     addCard,
-    scryfallId
+    scryfallId,
+    getCard
 };

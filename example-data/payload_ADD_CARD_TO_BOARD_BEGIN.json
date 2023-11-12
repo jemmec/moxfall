@@ -2,7 +2,7 @@
     "type": "ADD_CARD_TO_BOARD_BEGIN",
     "deck": {
         "id": "n4nPKx",
-        "name": "test",
+        "name": "hmmm",
         "description": "",
         "format": "commander",
         "visibility": "public",
@@ -155,11 +155,11 @@
                 "cards": {}
             }
         },
-        "version": 37,
+        "version": 51,
         "tokens": [],
         "hubs": [],
         "createdAtUtc": "2023-11-11T07:34:06.74Z",
-        "lastUpdatedAtUtc": "2023-11-12T04:54:48.777Z",
+        "lastUpdatedAtUtc": "2023-11-12T06:06:13.59Z",
         "exportId": "9006bb72-2ddb-49bd-8493-5b7263ee40e1",
         "authorTags": {},
         "isTooBeaucoup": false,
@@ -195,6 +195,7 @@
             "green": 0
         },
         "media": [],
+        "hasDeckChanged": false,
         "isLiked": false,
         "isOwner": true,
         "tags": {},
@@ -303,7 +304,7 @@
         "headers": {
             "Authorization": "Bearer [REDACTED]",
             "X-Public-Deck-ID": "xFyaVm8fIEagr73ytUEIXg",
-            "X-Deck-Version": 37
+            "X-Deck-Version": 51
         },
         "data": {
             "cardId": "DjJZN",
