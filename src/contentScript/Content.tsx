@@ -9,6 +9,7 @@ const Content = () => {
     const [prepare, setPrepare] = React.useState<boolean>(false);
     const [auth, setAuth] = React.useState<RefreshResponse | null>(null);
     const [deck, setDeck] = React.useState<DeckResponse | null>(null);
+    const [isHovering, setIsHovering] = React.useState<"add" | "cancel" | "none">("none");
 
     React.useEffect(() => {
         const handleLocationChange = () => {
@@ -120,10 +121,10 @@ const Content = () => {
     }, [auth, publicDeckId]);
 
     const handleDrop = (event: DragEvent) => {
-        setPrepare(false);
         event.preventDefault();
         const data = event.dataTransfer?.getData("text/plain");
 
+        setPrepare(false);
         if (!data) {
             return;
         }
@@ -200,12 +201,38 @@ const Content = () => {
         <div
             ref={dropRef}
             className={clsx(
-                "group/drop absolute inset-0 flex justify-center z-[9999] pointer-events-none",
+                "group/drop fixed top-0 left-0 w-screen h-screen z-[9999] pointer-events-none",
                 {
-                    "pointer-events-auto bg-cyan-400 bg-opacity-20": prepare
+                    "pointer-events-auto": prepare
                 }
             )}
-        ></div>
+            style={{ display: prepare ? "block" : "none" }}
+        >
+            <div className="p-8 gap-8 flex flex-col w-full h-full">
+                <div
+                    className={clsx("w-full h-full", {
+                        "bg-green-600 bg-opacity-10": isHovering === "add"
+                    })}
+                    onDragEnter={() => setIsHovering("add")}
+                    onDragLeave={() => setIsHovering("none")}
+                >
+                    <div className="w-full h-full border-4 border-dashed border-opacity-80 border-green-600 flex justify-center items-center">
+                        <h1 className="text-green-600 text-6xl font-bold">ADD CARD</h1>
+                    </div>
+                </div>
+                <div
+                    className={clsx("w-full h-full", {
+                        "bg-red-600 bg-opacity-30": isHovering === "cancel"
+                    })}
+                    onDragEnter={() => setIsHovering("cancel")}
+                    onDragLeave={() => setIsHovering("none")}
+                >
+                    <div className="w-full h-full border-4 border-dashed border-opacity-80 border-red-600 flex justify-center items-center">
+                        <h1 className="text-red-600 text-6xl font-bold">CANCEL</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 

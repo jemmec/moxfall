@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
-
 export const Popup = () => {
     return (
-        <main>
+        <main className="p-4 rounded-md">
             <h3>Moxfall</h3>
         </main>
     );

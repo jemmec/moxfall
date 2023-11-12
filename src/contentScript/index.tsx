@@ -14,7 +14,7 @@ import {
 const body = document.body as HTMLBodyElement;
 body.style.position = "relative";
 const app = document.createElement("div");
-app.id = "drop-intercept";
+app.id = "moxfall-drop-intercept";
 body.append(app);
 
 ReactDOM.createRoot(app as HTMLElement).render(<Content />);
