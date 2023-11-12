@@ -184,7 +184,7 @@ const Content = () => {
                 "cache-control": "no-store",
                 "content-type": "application/json; charset=utf-8",
                 "x-deck-has-changed": "false",
-                "x-deck-version": deck.version + 1 //Assumed version increment here...
+                "x-deck-version": deck.version + 1 //Assumed version increment here
             },
 
             //NOTE TO SELF:
