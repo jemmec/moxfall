@@ -1,4 +1,4 @@
-import SCRYFALL_API, { ScryfallCard } from ".";
+import SCRYFALL_API, { ScryfallCard, ScryfallResponse } from ".";
 
 const MATCHES = ["card", "large"];
 
@@ -12,7 +12,18 @@ async function getCardByCode(split: string[]): Promise<ScryfallCard | null> {
     const number = split[2];
     const lang = split.length === 5 ? split[3] : undefined;
 
-    return SCRYFALL_API.getScryfallCard(code, number, lang);
+    const res = await SCRYFALL_API.getScryfallCard(code, number, lang);
+
+    if (res.object === "error") {
+        console.error(`${res.status}: ${res.code} ${res.details}`);
+        return null;
+    }
+
+    if (res.object !== "card") {
+        console.error("We didn't get a card object back, hmmm...");
+    }
+
+    return res;
 }
 
 async function getCardByUuid(split: string[]): Promise<ScryfallCard | null> {

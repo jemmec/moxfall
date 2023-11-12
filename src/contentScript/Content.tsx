@@ -17,6 +17,13 @@ const Content = () => {
 
             const card = await inferCardFromUrl(new URL(url));
 
+            if (card === null) {
+                console.error("Scryfall card was null");
+                return;
+            }
+
+            //using details from the scryfall card, fetch the moxfield card...
+
             console.log("Scryfall Card:", card);
         },
         [auth, deck]

@@ -1,4 +1,4 @@
-import { ScryfallCard } from "./types";
+import { ScryfallCard, ScryfallResponse } from "./types";
 
 const SCRYFALL_API = "https://api.scryfall.com";
 
@@ -10,9 +10,9 @@ const getScryfallCard = async (
     code: string,
     number: number | string,
     lang?: string | undefined
-): Promise<ScryfallCard> => {
+): Promise<ScryfallResponse> => {
     return await fetch(`${SCRYFALL_API}/cards/${code}/${number}${lang ? `/${lang}` : ""}`).then(
-        (res) => res.json() as unknown as ScryfallCard
+        (res) => res.json() as unknown as ScryfallResponse
     );
 };
 
