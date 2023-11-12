@@ -1,3 +1,7 @@
 # Moxfall
 
-Small utility extension to enable drag+drop from scryfall into moxfield (I always wanted this functionality)
+<p align=center>The thing you didn't know you needed.</p>
+
+<p align=center>
+    <img src="./images/example.gif"></img>
+</p>

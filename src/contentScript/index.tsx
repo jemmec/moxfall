@@ -1,4 +1,4 @@
-console.log("Moxfall contentScript loaded.");
+console.log("Moxfall: Loaded");
 
 import ReactDOM from "react-dom/client";
 import Content from "./Content";

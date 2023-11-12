@@ -51,7 +51,7 @@ const Content = () => {
             }
 
             //SUCCESSFULL!
-            console.log(`SUCCESSFULLY ADDED ${card.name} TO THE MAINBOARD!`);
+            console.log(`Moxfall: Added ${card.name}`);
         },
         [auth, deck]
     );
@@ -145,21 +145,17 @@ const Content = () => {
 
         const handleMouseLeaveDoc = (event: MouseEvent) => {
             event.preventDefault();
-            if (!prepare) {
-                return;
-            }
             setPrepare(false);
         };
 
         const handleMouseEnterDoc = (event: MouseEvent) => {
             event.preventDefault();
-            if (!prepare) {
-                return;
-            }
             setPrepare(false);
         };
 
         dropRef.current.addEventListener("drop", handleDrop);
+        dropRef.current.addEventListener("mouseleave", handleMouseLeaveDoc);
+        dropRef.current.addEventListener("mouseenter", handleMouseEnterDoc);
 
         document.addEventListener("dragover", handleDragOverDoc);
         document.addEventListener("mouseleave", handleMouseLeaveDoc);
@@ -168,6 +164,8 @@ const Content = () => {
         return () => {
             if (dropRef.current) {
                 dropRef.current.removeEventListener("drop", handleDrop);
+                dropRef.current.removeEventListener("mouseleave", handleMouseLeaveDoc);
+                dropRef.current.removeEventListener("mouseenter", handleMouseEnterDoc);
 
                 document.removeEventListener("dragover", handleDragOverDoc);
                 document.removeEventListener("mouseleave", handleMouseLeaveDoc);
