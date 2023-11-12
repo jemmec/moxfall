@@ -24,7 +24,7 @@ export default defineManifest({
     content_scripts: [
         {
             run_at: "document_end",
-            matches: ["http://www.moxfield.com/decks/*", "https://www.moxfield.com/decks/*"],
+            matches: ["http://www.moxfield.com/*", "https://www.moxfield.com/*"],
             js: ["src/contentScript/index.tsx"]
         }
     ],
@@ -39,6 +39,6 @@ export default defineManifest({
             matches: []
         }
     ],
-    host_permissions: ["https://*/*", "http://*/*"],
+    host_permissions: ["http://www.moxfield.com/*", "https://www.moxfield.com/*"],
     permissions: ["storage", "scripting", "activeTab", "tabs"]
 });
