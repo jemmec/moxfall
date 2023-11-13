@@ -10,6 +10,8 @@ import {
     RuntimeMessageResponseWithCallerId,
     RuntimeMessageWithCallerId
 } from "../lib/types";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 const body = document.body as HTMLBodyElement;
 body.style.position = "relative";
@@ -17,7 +19,11 @@ const app = document.createElement("div");
 app.id = "moxfall-drop-intercept";
 body.append(app);
 
-ReactDOM.createRoot(app as HTMLElement).render(<Content />);
+ReactDOM.createRoot(app as HTMLElement).render(
+    <DndProvider backend={HTML5Backend}>
+        <Content />
+    </DndProvider>
+);
 
 const locationChangeEvent = new Event("locationchanged");
 

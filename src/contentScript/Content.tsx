@@ -2,14 +2,23 @@ import clsx from "clsx";
 import React from "react";
 import MOXFIELD_API, { DeckResponse, RefreshResponse, addCardToMainboard } from "../lib/moxfield";
 import { ALLOWED_HOSTS, getQueryString, inferCardFromUrl } from "../lib/scryfall";
+import { useDrop } from "react-dnd";
+import { NativeTypes } from "react-dnd-html5-backend";
 
-const Content = () => {
-    const dropRef = React.useRef<HTMLDivElement>(null);
+function Content() {
     const [publicDeckId, setPublicDeckId] = React.useState<string | null>(null);
-    const [prepare, setPrepare] = React.useState<boolean>(false);
     const [auth, setAuth] = React.useState<RefreshResponse | null>(null);
     const [deck, setDeck] = React.useState<DeckResponse | null>(null);
-    const [isHovering, setIsHovering] = React.useState<"add" | "cancel" | "none">("none");
+
+    const [{ canDrop }] = useDrop(
+        () => ({
+            accept: [NativeTypes.FILE],
+            collect: (monitor) => ({
+                canDrop: monitor.canDrop()
+            })
+        }),
+        []
+    );
 
     React.useEffect(() => {
         const handleLocationChange = () => {
@@ -124,7 +133,6 @@ const Content = () => {
         event.preventDefault();
         const data = event.dataTransfer?.getData("text/plain");
 
-        setPrepare(false);
         if (!data) {
             return;
         }
@@ -149,80 +157,83 @@ const Content = () => {
         handleCardDrop(new URL(url));
     };
 
-    const handleDragOverDoc = (event: DragEvent) => {
-        event.preventDefault();
-        event.dataTransfer!.dropEffect = "copy";
-        setPrepare(true);
-    };
+    return (
+        <div
+            className="fixed flex-col top-0 left-0 w-screen h-screen z-[9999]"
+            style={{ pointerEvents: canDrop ? "auto" : "none" }}
+        >
+            <div className="flex h-[calc(100%-256px)] w-full">
+                <Dropzone
+                    text="MAINBOARD"
+                    onDrop={(e) => {
+                        console.log("Dropped", e);
+                    }}
+                    class="w-full h-full flex justify-center items-center text-green-700"
+                    drop="bg-green-600 bg-opacity-10 text-opacity-30"
+                    over="bg-green-600 bg-opacity-30 text-opacity-60"
+                ></Dropzone>
+                <Dropzone
+                    text="CONSIDERING"
+                    onDrop={(e) => {
+                        console.log("Dropped", e);
+                    }}
+                    class="w-full h-full flex justify-center items-center text-blue-700"
+                    drop="bg-blue-600 bg-opacity-10 text-opacity-30"
+                    over="bg-blue-600 bg-opacity-30 text-opacity-60"
+                ></Dropzone>
+            </div>
+            <Dropzone
+                text="CANCEL"
+                onDrop={(e) => {}}
+                class="w-full h-[256px] flex justify-center items-center text-red-700"
+                drop="bg-red-600 bg-opacity-10 text-opacity-30"
+                over="bg-red-600 bg-opacity-30 text-opacity-60"
+            ></Dropzone>
+        </div>
+    );
+}
 
-    const handleMouseLeaveDoc = (event: MouseEvent) => {
-        event.preventDefault();
-        setPrepare(false);
-    };
+type URLDropPayload = {
+    urls: string;
+};
 
-    const handleMouseEnterDoc = (event: MouseEvent) => {
-        event.preventDefault();
-        setPrepare(false);
-    };
-
-    /**
-     * Only create the drop listeners if we have ALL the parts...
-     */
-    React.useEffect(() => {
-        if (!dropRef.current || !deck || !auth || !publicDeckId) {
-            removeListeners();
-            return;
-        }
-
-        dropRef.current.addEventListener("drop", handleDrop);
-        dropRef.current.addEventListener("mouseleave", handleMouseLeaveDoc);
-        dropRef.current.addEventListener("mouseenter", handleMouseEnterDoc);
-        document.addEventListener("dragover", handleDragOverDoc);
-        document.addEventListener("mouseleave", handleMouseLeaveDoc);
-        document.addEventListener("mouseenter", handleMouseEnterDoc);
-
-        return () => {
-            removeListeners();
-        };
-    }, [dropRef, dropRef.current, deck, auth, publicDeckId]);
-
-    const removeListeners = () => {
-        if (dropRef.current) {
-            dropRef.current.removeEventListener("drop", handleDrop);
-            dropRef.current.removeEventListener("mouseleave", handleMouseLeaveDoc);
-            dropRef.current.removeEventListener("mouseenter", handleMouseEnterDoc);
-            document.removeEventListener("dragover", handleDragOverDoc);
-            document.removeEventListener("mouseleave", handleMouseLeaveDoc);
-            document.removeEventListener("mouseenter", handleMouseEnterDoc);
-        }
-    };
+function Dropzone(props: {
+    onDrop?: (arg: URLDropPayload) => void | undefined;
+    class?: string | undefined;
+    drop?: string | undefined;
+    over?: string | undefined;
+    text: string;
+}) {
+    const { onDrop } = props;
+    const [{ canDrop, isOver }, drop] = useDrop(
+        () => ({
+            accept: [NativeTypes.FILE],
+            drop(item: URLDropPayload) {
+                if (onDrop) {
+                    onDrop(item);
+                }
+            },
+            collect: (monitor) => ({
+                isOver: monitor.isOver(),
+                canDrop: monitor.canDrop()
+            })
+        }),
+        [props]
+    );
 
     return (
         <div
-            ref={dropRef}
+            ref={drop}
             className={clsx(
-                "group/drop fixed top-0 left-0 w-screen h-screen z-[9999] pointer-events-none",
-                {
-                    "pointer-events-auto": prepare
-                }
+                "flex justify-center items-center",
+                props.class,
+                canDrop && props.drop,
+                isOver && props.over
             )}
-            style={{ display: prepare ? "block" : "none" }}
         >
-            <div className="p-8 gap-8 flex flex-col w-full h-full">
-                <div
-                    className={clsx("w-full h-full", {
-                        "rounded-lg bg-green-600 bg-opacity-10": isHovering === "add"
-                    })}
-                    onDragEnter={() => setIsHovering("add")}
-                    onDragLeave={() => setIsHovering("none")}
-                >
-                    <div className="rounded-lg w-full h-full border-4 border-dashed border-opacity-80 border-green-600 flex justify-center items-center pointer-events-none">
-                        <h1 className="text-green-600 text-6xl font-bold">ADD CARD</h1>
-                    </div>
-                </div>
-            </div>
+            {(canDrop || isOver) && <h1 className="text-8xl font-bold">{props.text}</h1>}
         </div>
     );
-};
+}
 
 export default Content;
